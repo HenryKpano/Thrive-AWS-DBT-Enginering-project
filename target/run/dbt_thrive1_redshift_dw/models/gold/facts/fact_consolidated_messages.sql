@@ -1,0 +1,58 @@
+
+
+  create view "thrivedev"."dev_gold"."fact_consolidated_messages__dbt_tmp" as (
+    
+
+WITH
+  start_msgs AS (
+    SELECT
+      id           AS msg_id,
+      conv_dataset_email AS email,
+      id           AS conversation_id,
+      message,
+      'open'       AS message_type,
+      created_at
+    FROM 
+        "thrivedev"."dev_gold"."dim_conversation_start"
+  ),
+  part_msgs AS (
+    SELECT
+      part_id           AS msg_id,
+      conv_dataset_email AS email,
+      conversation_id,
+      message,
+      part_type    AS message_type,
+      created_at
+    FROM 
+        "thrivedev"."dev_gold"."dim_conversation_part"
+  ),
+  all_msgs AS (
+    SELECT * FROM start_msgs
+    UNION ALL
+    SELECT * FROM part_msgs
+  ),
+  conv_customer AS (
+    SELECT
+      u.user_id AS user_id,
+      am.conversation_id
+    FROM all_msgs am
+    INNER JOIN "thrivedev"."dev_gold"."dim_user" u
+      ON am.email = u.email
+    WHERE u.is_customer = 1
+    GROUP BY u.user_id, am.conversation_id
+  )
+SELECT
+  am.msg_id      AS id,
+  cc.user_id     AS user_id,
+  am.email       AS email,
+  am.conversation_id,
+  am.message,
+  am.message_type,
+  am.created_at
+FROM all_msgs am
+INNER JOIN conv_customer cc
+  ON am.conversation_id = cc.conversation_id
+ORDER BY
+  am.conversation_id,
+  am.created_at
+  ) ;

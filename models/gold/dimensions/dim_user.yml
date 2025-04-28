@@ -1,0 +1,27 @@
+version: 2
+
+models:
+  - name: dim_user
+    description: "A dimension for users information"
+    columns:
+      - name: user_id
+        description: "The primary key for the account dimenrsion"
+        tests:
+          - unique
+          - not_null
+
+      - name: name
+        description: "The name of the user"
+        tests:
+          - not_null
+
+      - name: email
+        description: "The email of the user"
+        tests:
+          - not_null
+
+      - name: is_customer
+        description: "Whether the user is a customer"
+        tests:
+          - not_null
+
