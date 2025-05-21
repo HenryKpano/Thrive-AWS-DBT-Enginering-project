@@ -1,0 +1,18 @@
+services:
+  dbt:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: dbt-redshift-thrive_new
+    container_name: dbt_redshift_runner_new
+    working_dir: /usr/app
+    volumes:
+      - ./dbt_thrive1_redshift_dw:/usr/app # Mount DBT profiles
+    env_file:
+      - .env
+    entrypoint: tail -f /dev/null
+    environment:
+      - PYTHONUNBUFFERED=1
+      - PYTHONDONTWRITEBYTECODE=1
+      - LANG=C.UTF-8
+      - LC_ALL=C.UTF-8
