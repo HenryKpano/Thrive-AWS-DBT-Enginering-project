@@ -1,3 +1,32 @@
+x-airflow-common:
+  &airflow-common
+  
+  image: apache/airflow:2.7.2
+
+  environment:
+    AIRFLOW__CORE__EXECUTOR: LocalExecutor
+    AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
+    AIRFLOW__CORE__FERNET_KEY: ${FERNET_KEY}
+    AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'true'
+    AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
+    AIRFLOW__LOGGING__REMOTE_LOGGING: 'False'
+    AIRFLOW__WEBSERVER__HOST: host.docker.internal
+    AIRFLOW__WEBSERVER__SECRET_KEY: ${AIRFLOW__WEBSERVER__SECRET_KEY}
+    TZ: America/Toronto
+    # Add Redshift variables that profiles.yml will use
+    REDSHIFT_HOST: ${REDSHIFT_HOST}
+    REDSHIFT_USER: ${REDSHIFT_USER}
+    REDSHIFT_PASSWORD: ${REDSHIFT_PASSWORD}
+    REDSHIFT_PORT: ${REDSHIFT_PORT}
+    REDSHIFT_DB: ${REDSHIFT_DB}
+    REDSHIFT_SCHEMA: ${REDSHIFT_SCHEMA}
+  volumes:
+    - /var/run/docker.sock:/var/run/docker.sock
+    - ./dags:/opt/airflow/dags
+    - /etc/localtime:/etc/localtime:ro
+    - ./dbt_thrive1_redshift_dw:/usr/app    
+
+
 services:
   dbt:
     build:
@@ -7,12 +36,45 @@ services:
     container_name: dbt_redshift_runner_new
     working_dir: /usr/app
     volumes:
-      - ./dbt_thrive1_redshift_dw:/usr/app # Mount DBT profiles
+      - ./dbt_thrive1_redshift_dw:/usr/app # Mount DBT project and profiles
     env_file:
       - .env
-    entrypoint: tail -f /dev/null
+    command: dbt debug
+
+  postgres:
+    image: postgres:13
     environment:
-      - PYTHONUNBUFFERED=1
-      - PYTHONDONTWRITEBYTECODE=1
-      - LANG=C.UTF-8
-      - LC_ALL=C.UTF-8
+      POSTGRES_USER: airflow
+      POSTGRES_PASSWORD: airflow
+      POSTGRES_DB: airflow
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: always
+
+  redis:
+    image: redis:latest
+    restart: always
+
+  airflow-webserver:
+    <<: *airflow-common
+    container_name: airflow-webserver
+    restart: always
+    depends_on:
+      - postgres
+      - redis
+    ports:
+      - "8080:8080"
+    command: webserver
+
+  airflow-scheduler:
+    <<: *airflow-common
+    container_name: airflow-scheduler
+    restart: always
+    depends_on:
+      - airflow-webserver
+    command: scheduler
+
+volumes:
+  postgres_data:
+
+

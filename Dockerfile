@@ -13,6 +13,7 @@ RUN apt-get update && \
     build-essential \
     libpq-dev \
     git \
+    tzdata \
     && rm -rf /var/lib/apt/lists/*
 
 # Install dbt and plugins

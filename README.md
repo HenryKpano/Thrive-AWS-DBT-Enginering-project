@@ -32,18 +32,25 @@ To run this project follow the steps below:
                     REDSHIFT_DB=mydatabase
                     
                     REDSHIFT_SCHEMA=analytics
+
+                    FERNET_KEY=eDrO0WTZs0djv9r
+                    
+                    AIRFLOW__WEBSERVER__SECRET_KEY=oJQhrzE1fUgP8Uf
                 
                 ]
    
+    - docker compose run airflow-webserver airflow db init
+    
+    - docker compose run airflow-webserver airflow users create --username admin --firstname Admin --lastname User --role Admin --email admin@example.com --password admin
+
     - Run the command < docker compose build >
     
     - Run the command < docker compose up >
     
-    - Open another terminal and cd into the dbt project folder in this case cd into dbt_thrive1_redshift_dw
+    - After running docker compose up, Docker runs the dbt debug as part of the checks. This will show in the logs if it run successfully. 
     
-    - Run the command < docker exec -it dbt_redshift_runner_new bash >
+    - To schedule dbt test or dbt compile, or dbt run to build materialization, write Airflow Dags to perform such task.
    
-    - Test connections by running this command < dbt debug >
 
 
 ### Resources:
