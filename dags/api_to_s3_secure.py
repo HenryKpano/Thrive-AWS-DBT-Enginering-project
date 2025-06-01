@@ -9,7 +9,7 @@ import io
 import logging
 
 # Configuration
-API_KEY = 'e7710580dc646de56ba70eff280ccb1a'  # Store in Airflow Variables for security
+API_KEY = Variable.get('weather_api_key')  # in Airflow Variables for security
 LAT = '40.7128'  # Latitude for New York City
 LON = '-74.0060'  # Longitude for New York City
 BASE_API_URL = 'https://api.openweathermap.org/data/2.5/forecast'
