@@ -8,7 +8,7 @@ import json
 import logging
 
 # Configuration
-API_KEY = 'e7710580dc646de56ba70eff280ccb1a'  # e7710580dc646de56ba70eff280ccb1a Replace with your API key
+API_KEY = Variable.get('weather_api_key')  # e7710580dc646de56ba70eff280ccb1a Replace with your API key
 LAT = '40.7128'  # Example: Latitude for New York City
 LON = '-74.0060'  # Example: Longitude for New York City
 BASE_API_URL = 'https://api.openweathermap.org/data/2.5/forecast'
